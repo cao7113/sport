@@ -17,7 +17,10 @@ interface AMapTrackerProps {
 
 // Define types for AMap to avoid using any
 interface AMapType {
-  Map: new (container: HTMLDivElement, options: Record<string, unknown>) => AMapInstance;
+  Map: new (
+    container: HTMLDivElement,
+    options: Record<string, unknown>
+  ) => AMapInstance;
   Marker: new (options: Record<string, unknown>) => AMapMarker;
   Polyline: new (options: Record<string, unknown>) => AMapPolyline;
   Icon: new (options: Record<string, unknown>) => unknown;
@@ -65,6 +68,8 @@ export default function AMapTracker({
   const [mapLoaded, setMapLoaded] = useState(false);
   const polylineRef = useRef<AMapPolyline | null>(null);
   const markerRef = useRef<AMapMarker | null>(null);
+  // Create a ref to hold the map instance for cleanup
+  const mapInstanceRef = useRef<AMapInstance | null>(null);
 
   // 初始化地图
   useEffect(() => {
@@ -73,13 +78,15 @@ export default function AMapTracker({
     // 防止多次初始化
     if (mapInstance) return;
 
+    let map: AMapInstance | null = null;
+
     try {
       const initialCenter = currentLocation
         ? [currentLocation.longitude, currentLocation.latitude]
         : [116.397428, 39.90923]; // 默认北京中心
 
       // 初始化地图
-      const map = new window.AMap.Map(mapRef.current, {
+      map = new window.AMap.Map(mapRef.current, {
         zoom: 15,
         center: initialCenter,
         resizeEnable: true,
@@ -87,10 +94,14 @@ export default function AMapTracker({
 
       // 添加地图控件
       map.plugin(["AMap.ToolBar", "AMap.Scale"], () => {
-        map.addControl(new window.AMap.ToolBar());
-        map.addControl(new window.AMap.Scale());
+        if (map) {
+          map.addControl(new window.AMap.ToolBar());
+          map.addControl(new window.AMap.Scale());
+        }
       });
 
+      // Store in ref for cleanup
+      mapInstanceRef.current = map;
       setMapInstance(map);
 
       // 添加当前位置标记
@@ -112,9 +123,11 @@ export default function AMapTracker({
       console.error("初始化高德地图失败:", error);
     }
 
+    // Fix the cleanup function by using the ref
     return () => {
-      if (mapInstance) {
-        mapInstance.destroy();
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.destroy();
+        mapInstanceRef.current = null;
         setMapInstance(null);
       }
     };
@@ -166,7 +179,10 @@ export default function AMapTracker({
     if (!mapInstance || !currentLocation) return;
 
     try {
-      const position: [number, number] = [currentLocation.longitude, currentLocation.latitude];
+      const position: [number, number] = [
+        currentLocation.longitude,
+        currentLocation.latitude,
+      ];
 
       if (markerRef.current) {
         // 更新现有标记位置

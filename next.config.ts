@@ -1,5 +1,12 @@
 import type { NextConfig } from "next";
-import withPWA from "next-pwa";
+// Use type assertion to avoid TypeScript error
+import withPWAModule from "next-pwa";
+const withPWA = withPWAModule as unknown as (config: {
+  dest: string;
+  register: boolean;
+  skipWaiting: boolean;
+  disable?: boolean;
+}) => (nextConfig: NextConfig) => NextConfig;
 
 const nextConfig: NextConfig = {
   /* config options here */

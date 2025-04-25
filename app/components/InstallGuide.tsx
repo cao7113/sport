@@ -3,6 +3,12 @@
 import { useState, useEffect } from "react";
 // Removed unused import: Image
 
+// Add type declaration for Safari's standalone mode property
+// This extends the Navigator interface to include the iOS Safari-specific property
+interface SafariNavigator extends Navigator {
+  standalone?: boolean;
+}
+
 export default function InstallGuide() {
   const [isOpen, setIsOpen] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
@@ -11,7 +17,8 @@ export default function InstallGuide() {
   // 在组件挂载时检测是否为 standalone 模式
   useEffect(() => {
     // 检测 iOS 或 iPadOS 是否以 standalone 模式运行
-    const isIOSStandalone = window.navigator.standalone === true;
+    const isIOSStandalone =
+      (window.navigator as SafariNavigator).standalone === true;
 
     // 检测其他平台的 standalone 模式
     const isOtherStandalone = window.matchMedia(
