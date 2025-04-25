@@ -15,10 +15,40 @@ interface AMapTrackerProps {
   isTracking: boolean;
 }
 
+// Define types for AMap to avoid using any
+interface AMapType {
+  Map: new (container: HTMLDivElement, options: Record<string, unknown>) => AMapInstance;
+  Marker: new (options: Record<string, unknown>) => AMapMarker;
+  Polyline: new (options: Record<string, unknown>) => AMapPolyline;
+  Icon: new (options: Record<string, unknown>) => unknown;
+  Size: new (width: number, height: number) => unknown;
+  Pixel: new (x: number, y: number) => unknown;
+  ToolBar: new () => unknown;
+  Scale: new () => unknown;
+}
+
+interface AMapInstance {
+  plugin: (plugins: string[], callback: () => void) => void;
+  addControl: (control: unknown) => void;
+  setCenter: (position: [number, number]) => void;
+  setFitView: (overlays: unknown[]) => void;
+  destroy: () => void;
+}
+
+interface AMapMarker {
+  setPosition: (position: [number, number]) => void;
+  setMap: (map: AMapInstance | null) => void;
+}
+
+interface AMapPolyline {
+  setPath: (path: [number, number][]) => void;
+  setMap: (map: AMapInstance | null) => void;
+}
+
 // 使用 AMap 作为全局变量
 declare global {
   interface Window {
-    AMap: any;
+    AMap: AMapType;
     _AMapSecurityConfig: {
       securityJsCode: string;
     };
@@ -31,10 +61,10 @@ export default function AMapTracker({
   isTracking,
 }: AMapTrackerProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [mapInstance, setMapInstance] = useState<any>(null);
+  const [mapInstance, setMapInstance] = useState<AMapInstance | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const polylineRef = useRef<any>(null);
-  const markerRef = useRef<any>(null);
+  const polylineRef = useRef<AMapPolyline | null>(null);
+  const markerRef = useRef<AMapMarker | null>(null);
 
   // 初始化地图
   useEffect(() => {
@@ -88,7 +118,7 @@ export default function AMapTracker({
         setMapInstance(null);
       }
     };
-  }, [mapLoaded, currentLocation]);
+  }, [mapLoaded, currentLocation, mapInstance]);
 
   // 更新轨迹线
   useEffect(() => {
@@ -99,7 +129,7 @@ export default function AMapTracker({
       const path = trackPoints.map((point) => [
         point.longitude,
         point.latitude,
-      ]);
+      ]) as [number, number][];
 
       // 如果已经有轨迹线，更新它
       if (polylineRef.current) {
@@ -136,7 +166,7 @@ export default function AMapTracker({
     if (!mapInstance || !currentLocation) return;
 
     try {
-      const position = [currentLocation.longitude, currentLocation.latitude];
+      const position: [number, number] = [currentLocation.longitude, currentLocation.latitude];
 
       if (markerRef.current) {
         // 更新现有标记位置
@@ -164,7 +194,7 @@ export default function AMapTracker({
     } catch (error) {
       console.error("更新位置标记失败:", error);
     }
-  }, [currentLocation, mapInstance, isTracking]);
+  }, [currentLocation, isTracking, mapInstance]);
 
   return (
     <>

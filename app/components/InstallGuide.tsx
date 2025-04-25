@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
+// Removed unused import: Image
 
 export default function InstallGuide() {
   const [isOpen, setIsOpen] = useState(false);
@@ -180,9 +180,9 @@ export default function InstallGuide() {
                     3
                   </div>
                   <div>
-                    <p className="font-medium">选择"添加到主屏幕"</p>
+                    <p className="font-medium">选择&quot;添加到主屏幕&quot;</p>
                     <p className="text-sm text-gray-500">
-                      在分享菜单中向下滑动，找到并点击"添加到主屏幕"选项
+                      在分享菜单中向下滑动，找到并点击&quot;添加到主屏幕&quot;选项
                     </p>
                     <div className="mt-2 bg-gray-100 rounded-lg p-2 flex justify-center">
                       <svg
@@ -203,7 +203,7 @@ export default function InstallGuide() {
                   <div>
                     <p className="font-medium">确认添加</p>
                     <p className="text-sm text-gray-500">
-                      确认应用名称（如需可以修改），然后点击右上角的"添加"
+                      确认应用名称（如需可以修改），然后点击右上角的&quot;添加&quot;
                     </p>
                     <div className="mt-2 bg-gray-100 rounded-lg p-2 flex justify-center">
                       <svg
